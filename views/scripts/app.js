@@ -1,0 +1,138 @@
+$(document).ready(function () {
+  $.get("/products", function (data) {
+    var products = data.data.products;
+    products.forEach(product => {
+      $("#products").append("<tr id='" + product.id + "'><td>" + product.id + "</td><td class='name'>" + product.name +
+        "</td><td class='image'>" + "<img src='" + product.image + "' class='image-sm'>" + 
+        "</td><td class='desc'>" + product.description + "</td><td class='price'>" + product.price + 
+        "</td><td class='category'>" + product.category + 
+        "</td><td class='edit'><a href='javascript:;' onclick='showEdit(" + product.id + ")'>Edit</a></td>" + 
+        "<td class='delete'><a href='javascript:;' onclick='showDelete(" + product.id + ")'>Delete</a></td></tr>")
+    });
+  })
+});
+
+var categories = ["Laptop", "Phone", "Tablet", "Accessory"];
+
+(function ($) {
+  function createProduct(e) {
+    data = new FormData();
+    data.append('image', $('#image')[0].files[0]);
+    data.append('name', $('#name').val());
+    data.append('desc', $('#desc').val());
+    data.append('price', $('#price').val());
+    data.append('category', $('#category').val());
+
+    $.ajax({
+      method: 'POST',
+      url: "/product",
+      data: data,
+      processData: false,
+      contentType: false,
+      success: function (data, textStatus, jQxhr) {
+        if (data.message == "Success") {
+          location.reload(true);
+        }
+      }
+    })
+
+    e.preventDefault();
+  }
+
+  $('#form-upload').submit(createProduct);
+})(jQuery);
+
+var showEdit = function(product_id) {
+  row = $("tr#" + product_id)[0];
+  product = {
+    id: row.childNodes[0].textContent,
+    name: row.childNodes[1].textContent,
+    image: row.childNodes[2].lastChild.src,
+    desc: row.childNodes[3].textContent,
+    price: row.childNodes[4].textContent,
+    category: categories.indexOf(row.childNodes[5].textContent) + 1
+  }
+
+  $("tr#" + product_id + " td.name")[0].innerHTML = "<input class='form-control' type='text' value='" + product.name + "' id='row-name'>";
+  $("tr#" + product_id + " td.image")[0].innerHTML = "<input type='file' class='form-control' id='row-image'>";
+  $("tr#" + product_id + " td.desc")[0].innerHTML = "<input class='form-control' type='text' value='" + product.desc + "' id='row-desc'>";
+  $("tr#" + product_id + " td.price")[0].innerHTML = "<input class='form-control' type='text' value='" + product.price + "' id='row-price'>";
+  $("tr#" + product_id + " td.category")[0].innerHTML = "<select class='custom-select' id='row-category' value='" + product.category + "'>"
+    + "<option value='1'>Laptop</option>"
+    + "<option value='2'>Phone</option>"
+    + "<option value='3'>Tablet</option>"
+    + "<option value='4'>Accessory</option>"
+    + "</select>";
+  $("tr#" + product_id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='save(" + product.id + ")'>Save</a>";
+  $("tr#" + product_id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='cancelEdit(" + JSON.stringify(product) + ")'>Cancel</a>";
+}
+
+var save = function(product_id) {
+  updateProduct(product_id);
+}
+
+function updateProduct(product_id) {
+  data = new FormData();
+  data.append('id', product_id);
+  data.append('image', $("tr#" + product_id + " td.image input#row-image")[0].files[0]);
+  data.append('name', $("tr#" + product_id + " td.name input#row-name").val());
+  data.append('desc', $("tr#" + product_id + " td.desc input#row-desc").val());
+  data.append('price', $("tr#" + product_id + " td.price input#row-price").val());
+  data.append('category', $("tr#" + product_id + " td.category select#row-category").val());
+
+  $.ajax({
+    method: 'PUT',
+    url: "/product",
+    data: data,
+    processData: false,
+    contentType: false,
+    success: function (data, textStatus, jQxhr) {
+      if (data.message == "Success") {
+        location.reload(true);
+      }
+    }
+  })
+}
+
+var cancelEdit = function(product) {
+  $("tr#" + product.id + " td.name")[0].innerHTML = product.name;
+  $("tr#" + product.id + " td.image")[0].innerHTML = "<img src='" + product.image + "' class='image-sm'>";
+  $("tr#" + product.id + " td.desc")[0].innerHTML = product.desc;
+  $("tr#" + product.id + " td.price")[0].innerHTML = product.price;
+  $("tr#" + product.id + " td.category")[0].innerHTML = product.category;
+
+  $("tr#" + product.id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='showEdit(" + product.id + ")'>Edit</a>";
+  $("tr#" + product.id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='showDelete(" + product.id + ")'>Delete</a>";
+}
+
+var showDelete = function(product_id) {
+  row = $("tr#" + product_id)[0];
+  product = {
+    id: row.childNodes[0].textContent,
+    name: row.childNodes[1].textContent,
+    image: row.childNodes[2].lastChild.src,
+    desc: row.childNodes[3].textContent,
+    price: row.childNodes[4].textContent,
+    category: categories.indexOf(row.childNodes[5].textContent) + 1
+  }
+
+  $("tr#" + product_id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='deleteProduct(" + JSON.stringify(product) + ")'>Yes</a>";
+  $("tr#" + product_id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='cancelDelete()'>No</a>";
+}
+
+var deleteProduct = function(product) {
+  $.ajax({
+    method: 'DELETE',
+    url: "/product",
+    dataType: "json",
+    data: product,
+    success: function(data, textStatus, jQxhr) {
+      location.reload(true);
+    }
+  })
+}
+
+var cancelDelete = function() {
+  $("tr#" + product.id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='showEdit(" + product.id + ")'>Edit</a>";
+  $("tr#" + product.id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='showDelete(" + product.id + ")'>Delete</a>";
+}
