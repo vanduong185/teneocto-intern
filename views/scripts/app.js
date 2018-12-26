@@ -55,6 +55,8 @@ var showEdit = function (product_id) {
     category: categories.indexOf(row.childNodes[5].textContent) + 1
   }
 
+  console.log(product)
+
   $("tr#" + product_id + " td.name")[0].innerHTML = "<input class='form-control' type='text' value='" + product.name + "' id='row-name'>";
   $("tr#" + product_id + " td.image")[0].innerHTML = "<input type='file' class='form-control' id='row-image'>";
   $("tr#" + product_id + " td.desc")[0].innerHTML = "<input class='form-control' type='text' value='" + product.desc + "' id='row-desc'>";
@@ -65,6 +67,7 @@ var showEdit = function (product_id) {
     + "<option value='3'>Tablet</option>"
     + "<option value='4'>Accessory</option>"
     + "</select>";
+  $("tr#" + product_id + " td.category select option[value='" + product.category +"']").attr("selected", "selected");
   $("tr#" + product_id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='save(" + JSON.stringify(product) + ")'>Save</a>";
   $("tr#" + product_id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='cancelEdit(" + JSON.stringify(product) + ")'>Cancel</a>";
 }
@@ -112,7 +115,7 @@ function updateProduct(old_product) {
         $("tr#" + product_id + " td.image")[0].innerHTML = "<img src='" + filename_image + "' class='image-sm'>";
         $("tr#" + product_id + " td.desc")[0].innerHTML = new_product.desc;
         $("tr#" + product_id + " td.price")[0].innerHTML = new_product.price;
-        $("tr#" + product_id + " td.category")[0].innerHTML = new_product.category;
+        $("tr#" + product_id + " td.category")[0].innerHTML = categories[new_product.category - 1];
 
         $("tr#" + product_id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='showEdit(" + product_id + ")'>Edit</a>";
         $("tr#" + product_id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='showDelete(" + product_id + ")'>Delete</a>";
@@ -127,7 +130,7 @@ var cancelEdit = function (product) {
   $("tr#" + product.id + " td.image")[0].innerHTML = "<img src='" + product.image + "' class='image-sm'>";
   $("tr#" + product.id + " td.desc")[0].innerHTML = product.desc;
   $("tr#" + product.id + " td.price")[0].innerHTML = product.price;
-  $("tr#" + product.id + " td.category")[0].innerHTML = product.category;
+  $("tr#" + product.id + " td.category")[0].innerHTML = categories[product.category - 1];
 
   $("tr#" + product.id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='showEdit(" + product.id + ")'>Edit</a>";
   $("tr#" + product.id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='showDelete(" + product.id + ")'>Delete</a>";

@@ -1,6 +1,7 @@
 var express = require("express");
 var bodyParser = require('body-parser');
 var db = require('./db');
+var fdb = require('./firestore_db');
 var formidable = require("formidable");
 var fsex = require("fs-extra");
 
@@ -148,6 +149,18 @@ app.get("/products", function (req, res) {
     }
   })
 })
+
+// app.get("/fsproducts", function (req, res) {
+//   fdb.collection("products").get().then(function(result) {
+//     products = [];
+//     result.docs.forEach(doc => {
+//       products.push(doc.data())
+//     });
+//     console.log(products);
+//   fdb.collection("products").doc
+
+//   fsb
+// })
 
 app.listen(8000, function () {
   console.log('App listening on port 8000!');
