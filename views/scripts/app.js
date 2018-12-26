@@ -1,12 +1,14 @@
+var products = [];
+
 $(document).ready(function () {
   $.get("/products", function (data) {
-    var products = data.data.products;
+    products = data.data.products;
     products.forEach(product => {
       $("#products").append("<tr id='" + product.id + "'><td>" + product.id + "</td><td class='name'>" + product.name +
-        "</td><td class='image'>" + "<img src='" + product.image + "' class='image-sm'>" + 
-        "</td><td class='desc'>" + product.description + "</td><td class='price'>" + product.price + 
-        "</td><td class='category'>" + product.category + 
-        "</td><td class='edit'><a href='javascript:;' onclick='showEdit(" + product.id + ")'>Edit</a></td>" + 
+        "</td><td class='image'>" + "<img src='" + product.image + "' class='image-sm'>" +
+        "</td><td class='desc'>" + product.description + "</td><td class='price'>" + product.price +
+        "</td><td class='category'>" + product.category +
+        "</td><td class='edit'><a href='javascript:;' onclick='showEdit(" + product.id + ")'>Edit</a></td>" +
         "<td class='delete'><a href='javascript:;' onclick='showDelete(" + product.id + ")'>Delete</a></td></tr>")
     });
   })
@@ -42,7 +44,7 @@ var categories = ["Laptop", "Phone", "Tablet", "Accessory"];
   $('#form-upload').submit(createProduct);
 })(jQuery);
 
-var showEdit = function(product_id) {
+var showEdit = function (product_id) {
   row = $("tr#" + product_id)[0];
   product = {
     id: row.childNodes[0].textContent,
@@ -63,22 +65,39 @@ var showEdit = function(product_id) {
     + "<option value='3'>Tablet</option>"
     + "<option value='4'>Accessory</option>"
     + "</select>";
-  $("tr#" + product_id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='save(" + product.id + ")'>Save</a>";
+  $("tr#" + product_id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='save(" + JSON.stringify(product) + ")'>Save</a>";
   $("tr#" + product_id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='cancelEdit(" + JSON.stringify(product) + ")'>Cancel</a>";
 }
 
-var save = function(product_id) {
+var save = function (product_id) {
   updateProduct(product_id);
 }
 
-function updateProduct(product_id) {
+function updateProduct(old_product) {
+  product_id = old_product.id;
+  console.log(product_id)
+  new_product = {
+    name: $("tr#" + product_id + " td.name input").val(),
+    desc: $("tr#" + product_id + " td.desc input").val(),
+    price: $("tr#" + product_id + " td.price input").val(),
+    category: $("tr#" + product_id + " td.category select").val()
+  }
+
+
+  if ($("tr#" + product_id + " td.image input")[0].files.length > 0) 
+    filename_image = "./assets/images/" + product_id + "/" + $("tr#" + product_id + " td.image input")[0].files[0].name
+  else
+    filename_image = old_product.image;
+
   data = new FormData();
   data.append('id', product_id);
-  data.append('image', $("tr#" + product_id + " td.image input#row-image")[0].files[0]);
-  data.append('name', $("tr#" + product_id + " td.name input#row-name").val());
-  data.append('desc', $("tr#" + product_id + " td.desc input#row-desc").val());
-  data.append('price', $("tr#" + product_id + " td.price input#row-price").val());
-  data.append('category', $("tr#" + product_id + " td.category select#row-category").val());
+  data.append('image', $("tr#" + product_id + " td.image input")[0].files[0]);
+  data.append('name', new_product.name);
+  data.append('desc', new_product.desc);
+  data.append('price', new_product.price);
+  data.append('category', new_product.category);
+
+  console.log(product_id)
 
   $.ajax({
     method: 'PUT',
@@ -88,13 +107,22 @@ function updateProduct(product_id) {
     contentType: false,
     success: function (data, textStatus, jQxhr) {
       if (data.message == "Success") {
-        location.reload(true);
+        $("tr#" + product_id).hide();
+        $("tr#" + product_id + " td.name")[0].innerHTML = new_product.name;
+        $("tr#" + product_id + " td.image")[0].innerHTML = "<img src='" + filename_image + "' class='image-sm'>";
+        $("tr#" + product_id + " td.desc")[0].innerHTML = new_product.desc;
+        $("tr#" + product_id + " td.price")[0].innerHTML = new_product.price;
+        $("tr#" + product_id + " td.category")[0].innerHTML = new_product.category;
+
+        $("tr#" + product_id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='showEdit(" + product_id + ")'>Edit</a>";
+        $("tr#" + product_id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='showDelete(" + product_id + ")'>Delete</a>";
+        $("tr#" + product_id).fadeOut(1000).fadeIn(1000);
       }
     }
   })
 }
 
-var cancelEdit = function(product) {
+var cancelEdit = function (product) {
   $("tr#" + product.id + " td.name")[0].innerHTML = product.name;
   $("tr#" + product.id + " td.image")[0].innerHTML = "<img src='" + product.image + "' class='image-sm'>";
   $("tr#" + product.id + " td.desc")[0].innerHTML = product.desc;
@@ -105,7 +133,7 @@ var cancelEdit = function(product) {
   $("tr#" + product.id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='showDelete(" + product.id + ")'>Delete</a>";
 }
 
-var showDelete = function(product_id) {
+var showDelete = function (product_id) {
   row = $("tr#" + product_id)[0];
   product = {
     id: row.childNodes[0].textContent,
@@ -120,19 +148,19 @@ var showDelete = function(product_id) {
   $("tr#" + product_id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='cancelDelete()'>No</a>";
 }
 
-var deleteProduct = function(product) {
+var deleteProduct = function (product) {
   $.ajax({
     method: 'DELETE',
     url: "/product",
     dataType: "json",
     data: product,
-    success: function(data, textStatus, jQxhr) {
+    success: function (data, textStatus, jQxhr) {
       location.reload(true);
     }
   })
 }
 
-var cancelDelete = function() {
+var cancelDelete = function () {
   $("tr#" + product.id + " td.edit")[0].innerHTML = "<a href='javascript:;' onclick='showEdit(" + product.id + ")'>Edit</a>";
   $("tr#" + product.id + " td.delete")[0].innerHTML = "<a href='javascript:;' onclick='showDelete(" + product.id + ")'>Delete</a>";
 }
