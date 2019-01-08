@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Product Management</title>
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <link href="./views/stylesheets/style.css" rel="stylesheet" type="text/css" />
+  <link href="../node_modules/bootstrap-material-design/dist/css/bootstrap-material-design.min.css" rel="stylesheet"
+    type="text/css" />
+  <script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-storage.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body class="bg-light">
+  <div class="container" id="app">
+    <div class="py-5 text-center">
+      <h2>Products Management</h2>
+    </div>
+    <div class="upload-form">
+      <h4 class="mb-3">Create product</h4>
+      <div class="mb-3">
+        <label for="name">Product name</label>
+        <input type="text" class="form-control" name="name" id="name" v-model="new_product.name" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="desc">Description</label>
+        <input type="text" class="form-control" name="desc" id="desc" v-model="new_product.description" required>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="price">Category</label>
+          <!-- <select class="custom-select d-block w-100" name="category" id="category">
+              <option value="1">Laptop</option>
+              <option value="2">Phone</option>
+              <option value="3">Tablet</option>
+              <option value="4">Accessory</option>
+            </select> -->
+          <select class="custom-select d-block w-100" name="category" id="category" v-model="new_product.category">
+            <option value="zXysLStjivQBlYbYidk0">Laptop</option>
+            <option value="nDUFVMG5MJa9nkY8FT89">Phone</option>
+            <option value="GN3rVzTpOVJd7Be5ScsW">Tablet</option>
+            <option value="u1DT5MfxIU6v1eMdBTTf">Accessory</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="price">Price</label>
+          <input type="text" class="form-control" name="price" id="price" v-model="new_product.price" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="image">Images</label>
+        <input type="file" class="form-control" name="image" id="image" ref="file" @change="(e) => { if (e.target.files.length > 0) file_image = e.target.files[0]}" required>
+      </div>
+
+      <div class="mb-3" style="text-align: center">
+        <button class="btn-lg btn-info" style="cursor: pointer" v-on:click="createProduct">Create</button>
+      </div>
+    </div>
+
+    <div class="show-data">
+      <h4 class="mb-3">List products</h4>
+      <table class="table table-striped table-hover">
+        <thead>
+          <th>Name</th>
+          <th>Image</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Category</th>
+          <th>Action</th>
+        </thead>
+        <tbody id="products">
+          <tr v-for="product in products" v-bind:id="product.id">
+            <template v-if="!product.isEditing && !product.isDeleting">
+              <td class='name'>{{ product.name }}</td>
+              <td class='image'>
+                <img v-bind:src="product.image" class='image-sm'>
+              </td>
+              <td class='desc'>{{ product.description }}</td>
+              <td class='price'>{{ product.price }}</td>
+              <td class='category'>{{ categories_inv[product.category] }}</td>
+              <td><a href='javascript:;' v-on:click="product.isEditing = true">Edit</a></td>
+              <td><a href='javascript:;' v-on:click="product.isDeleting = true">Delete</a></td>
+            </template>
+            <template v-if="product.isEditing">
+              <td><input type="text" class="form-control" v-model="product.name"></td>
+              <td><input type="file" class="form-control" @change="(e) => { if (e.target.files.length > 0) product.image_file = e.target.files[0]}"></td>
+              <td><input type="text" class="form-control" v-model="product.description"></td>
+              <td><input type="text" class="form-control" v-model="product.price"></td>
+              <td>
+                <select class="custom-select d-block w-100" v-model="product.category">
+                  <option value="zXysLStjivQBlYbYidk0">Laptop</option>
+                  <option value="nDUFVMG5MJa9nkY8FT89">Phone</option>
+                  <option value="GN3rVzTpOVJd7Be5ScsW">Tablet</option>
+                  <option value="u1DT5MfxIU6v1eMdBTTf">Accessory</option>
+                </select>
+              </td>
+              <td><a href='javascript:;' v-on:click="updateProduct(product)">Save</a></td>
+              <td><a href='javascript:;' v-on:click="product.isEditing = false">Cancel</a></td>
+            </template>
+            <template v-if="product.isDeleting">
+              <td class='name'>{{ product.name }}</td>
+              <td class='image'>
+                <img v-bind:src="product.image" class='image-sm'>
+              </td>
+              <td class='desc'>{{ product.description }}</td>
+              <td class='price'>{{ product.price }}</td>
+              <td class='category'>{{ categories_inv[product.category] }}</td>
+              <td><a href='javascript:;' v-on:click="deleteProduct(product)">Yes</a></td>
+              <td><a href='javascript:;' v-on:click="product.isDeleting = false">Cancel</a></td>
+            </template>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
+  <script src="../node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js" type="text/javascript"></script>
+  <script src="./views/scripts/config.js" type="text/javascript"></script>
+  <script src="./views/scripts/app_vuejs.js" type="text/javascript"></script>
+</body>
+
+</html>
