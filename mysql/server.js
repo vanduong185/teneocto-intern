@@ -1,7 +1,6 @@
 var express = require("express");
 var bodyParser = require('body-parser');
 var db = require('./db');
-var fdb = require('./firestore_db');
 var formidable = require("formidable");
 var fsex = require("fs-extra");
 
@@ -12,7 +11,7 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
 app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/views/index_vuejs.html");
+  res.sendFile(__dirname + "/views/index.html");
 });
 
 app.post("/product", function (req, res) {

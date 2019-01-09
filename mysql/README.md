@@ -1,4 +1,4 @@
-# Project: Products management
+# Project: Products management - use mysql at server
 
 **Install**
  - Requirement: npm, nodejs, mysql
