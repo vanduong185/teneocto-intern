@@ -1,0 +1,43 @@
+body {
+  margin: 0;
+}
+
+.app .container {
+}
+
+.search {
+  border-right: 2px solid #ddd;
+  background-color: #eee;
+  padding: 15px;
+  height: 600px;
+}
+
+.search-input {
+}
+
+/* .search-btn {
+  width: 20%;
+} */
+
+.translator {
+  background-color: #fff;
+}
+
+.item {
+  padding: 0px;
+}
+
+.item:hover {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.search-bar {
+  height: 50px;
+}
+
+.list {
+  overflow: auto;
+  height: 500px;
+}
+
