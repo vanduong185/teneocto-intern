@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+    crossorigin="anonymous">
+  <link href="./styles/style.css" rel="stylesheet" type="text/css">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <webview src="https://translate.google.com" preload="./scripts/test.js"></webview>
+  <script>
+    const fs = require("fs");
+    
+
+    const webview = document.querySelector('webview')
+    //webview.openDevTools();
+
+    webview.addEventListener('did-stop-loading', () => {
+      console.log("a")
+      webview.openDevTools();
+      webview.executeJavaScript('myTools.getData()');
+    })
+
+    fs.readFile('data.json', 'utf8', function (err, data) {
+      if (err) throw err;
+      obj = JSON.parse(data);
+      obj.splice(2, 86800)
+
+      for (word of obj) {
+          console.log(word.en)
+          webview.src = "https://translate.google.com/#view=home&op=translate&sl=en&tl=vi&text=" + word.en;
+      }
+    });
+  </script>
+</body>
+
+</html>
