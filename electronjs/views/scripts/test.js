@@ -3,11 +3,21 @@ const fs = require("fs");
 
 global.arr = [];
 
+
 fs.readFile('data.json', 'utf8', function (err, data) {
   if (err) throw err;
   obj = JSON.parse(data);
   global.words = obj;
+  //global.a = global.words
+  global.a = global.words.splice(28527, 2183);
+  console.log(global.a)
 })
+
+// var data = fs.readFileSync("data.json", "utf8");
+// global.words = JSON.parse(data);
+
+
+
 
 //ipcRenderer.sendSync('synchronous-message', 'sync ping')
 
@@ -20,34 +30,52 @@ fs.readFile('data.json', 'utf8', function (err, data) {
 //   // // global.a.push(c)
 // })
 
+var writeStream = fs.createWriteStream('add.json');
+
+writeStream.write("[");
+
+writeStream.on('finish', () => {
+  console.log('wrote all data to file');
+});
+
 ipcRenderer.on("go", (e, message) => {
-  a = global.words;
-  a.splice(1000, 86800)
+  
   var i = message.index;
   var isTranslating = false;
-  var cur = "";
+  var cur_vi = "";
+  var cur_en = "";
+
   var t = setInterval(function () {
-    word = a[i];
-    is_new_word = false;
+    console.log(i)
+    word = global.a[i];
     if (isTranslating == false) {
-      console.log("set value")
       window.location.href = "https://translate.google.com/#view=home&op=translate&sl=en&tl=vi&text=" + word.en;
     }
     isTranslating = true;
 
-    console.log(i);
-
     if (document.querySelector(".translation span")) {
+      // var vi = document.querySelector(".translation span").textContent;
+      // if (cur_vi != vi) {
+      //   cur_vi = vi;
+      //   word.vi = vi;
+      //   word.sound = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=gtx&q=' + word.en;
+      //   if (document.querySelector(".transliteration-content")) {
+      //     word.phonetic = document.querySelector(".transliteration-content").textContent;
+      //   }
+      //   isTranslating = false;
+      //   writeStream.write(JSON.stringify(word) + ",");
+      // }
+      var en = document.querySelector("#source").value;
       var vi = document.querySelector(".translation span").textContent;
-      if (cur != vi) {
-        cur = vi;
+      if (cur_en != en) {
+        cur_en = en;
         word.vi = vi;
         word.sound = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=gtx&q=' + word.en;
         if (document.querySelector(".transliteration-content")) {
           word.phonetic = document.querySelector(".transliteration-content").textContent;
         }
         isTranslating = false;
-        global.arr.push(word);
+        writeStream.write(JSON.stringify(word) + ",");
       }
     }
 
@@ -60,58 +88,16 @@ ipcRenderer.on("go", (e, message) => {
       cur_en = document.querySelector("#source").value;
       document.querySelector("#source").value = cur_en.split(cur_en[cur_en.length - 1]);
       ipcRenderer.send("err-message", { index: i })
+
     }
     else {
       //console.log("not error")
     }
-
-    if (i >= a.length - 1) {
+    if (i >= global.a.length) {
       clearInterval(t);
-      fs.writeFileSync("translate.json", JSON.stringify(global.arr));
+      //fs.writeFileSync("translate.json", JSON.stringify(global.arr));
+      writeStream.write("]");
+      writeStream.end();
     }
-  }, 100)
-
-  // var t2 = setInterval(function () {
-  //   error_tag = document.querySelector(".result-error .error-placeholder");
-  //   if (error_tag) {
-  //     console.log("error detected");
-  //     ipcRenderer.send("err-message")
-  //   } 
-  //   else {
-  //     //console.log("not error")
-  //   }
-  // }, 100)
+  }, 50)
 })
-
-function process(data, i) {
-  // setTimeout(() => {
-  //   console.log(i);
-  //   word = data[i];
-  //   window.location.href = "https://translate.google.com/#view=home&op=translate&sl=en&tl=vi&text=" + word.en;
-  //   console.log(word)
-  //   i++;
-  //   if (i < data.length) {
-  //     process(data, i)
-  //   }
-  // }, 3000)
-
-  var time = setInterval(function () {
-    word = data[i];
-    window.location.href = "https://translate.google.com/#view=home&op=translate&sl=en&tl=vi&text=" + word.en;
-    console.log(i)
-    i++;
-    if (i > data.length) {
-      clearInterval(time)
-    }
-  }, 1000)
-}
-
-
-
-myTools = {
-  getData: function () {
-    console.log(document.querySelector(".translation span").textContent);
-    text = document.querySelector(".translation span").textContent;
-    fs.appendFileSync("a.json", text)
-  }
-}
